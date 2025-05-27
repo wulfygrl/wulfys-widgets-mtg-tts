@@ -1,4 +1,4 @@
-moduleVersion = 0.00
+moduleVersion = 0.01
 pID = "_Wulfy_Widgets"
 
 --Wulfy Widgets by @wulfygrl
