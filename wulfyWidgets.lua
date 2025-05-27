@@ -34,7 +34,7 @@ function onload(saved_data)
     font_color = {1,156/255,196/255}
   })
   self.createButton({
-    label="Update"
+    label="Update",
     click_function="selfUpdateCheck",
     function_owner=self,
     position={0,0.15,0.33},
@@ -43,6 +43,7 @@ function onload(saved_data)
     height=60,
     width=450,
   })
+end
 
 function selfUpdateCheck()
   WebRequest.get(githubSource, self, selfUpdate)
