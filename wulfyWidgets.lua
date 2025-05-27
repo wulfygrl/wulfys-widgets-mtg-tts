@@ -11,11 +11,36 @@ isRegistered = false
 githubSource = "https://raw.githubusercontent.com/wulfygrl/wulfys-widgets-mtg-tts/main/wulfyWidgets.lua"
 
 function onload(saved_data)
+  createChipButtons()
+end
+
+function selfUpdateCheck()
+  WebRequest.get(githubSource, selfUpdate)
+end
+
+function selfUpdate(webRequest)
+  local gitVersion = tonumber(webRequest.text:match('moduleVersion%s=%s(%d+%.%d+)'))
+  if gitVersion ~= nil and gitVersion > moduleVersion then
+    self.script_code = webRequest.text
+    self.reload()
+  end
+end
+
+function createChipButtons()
   self.createButton({
-    label= "Wulfy's Widgets",
     click_function="DoNothing",
     function_owner=self,
-    position={0,0.15,-0.155},
+    position={0,0.15,-0.25},
+    rotation={180,0,0},
+    height= 240,
+    width= 525,
+    color = {90/255,24/255,51/255}
+  })
+  self.createButton({
+    label= "Wulfy's\nWidgets",
+    click_function="DoNothing",
+    function_owner=self,
+    position={0,0.15,-0.25},
     height= 0,
     width= 0,
     color = {90/255,24/255,51/255},
@@ -31,7 +56,8 @@ function onload(saved_data)
     height=0,
     width=0,
     font_size = 60,
-    font_color = {1,156/255,196/255}
+    font_color = {90/255,24/255,51/255}
+    -- font_color = {1,156/255,196/255}
   })
   self.createButton({
     label="Update",
@@ -44,15 +70,6 @@ function onload(saved_data)
     width=450,
   })
 end
-
-function selfUpdateCheck()
-  WebRequest.get(githubSource, selfUpdate)
-end
-
-function selfUpdate(webRequest)
-  local gitVersion = tonumber(webRequest.text:match('moduleVersion%s=%s(%d+%.%d+)'))
-  if gitVersion ~= nil and gitVersion > moduleVersion then
-    self.script_code = webRequest.text
-    self.reload()
-  end
+  
+function DoNothing()
 end
