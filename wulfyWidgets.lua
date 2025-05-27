@@ -46,7 +46,7 @@ function onload(saved_data)
 end
 
 function selfUpdateCheck()
-  WebRequest.get(githubSource, self, selfUpdate)
+  WebRequest.get(githubSource, selfUpdate)
 end
 
 function selfUpdate(webRequest)
