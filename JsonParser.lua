@@ -73,6 +73,6 @@ function json.parse(str, pos, end_delim)
   end
 end
 
-function onLoad()
+function exportSelf()
   Global.setVar('JSON',json)
 end
