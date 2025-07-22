@@ -72,7 +72,5 @@ function json.parse(str, pos, end_delim)
     error('Invalid json syntax starting at ' .. pos_info_str)
   end
 end
+Global.setVar('JSON',json)
 
-function exportSelf()
-  Global.setVar('JSON',json)
-end
