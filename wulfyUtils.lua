@@ -264,13 +264,20 @@ function drawChipButtons(p)
 end
 
 function getColors(p)
-  local c1, c2
-  local hues = HUE_PALETTES
-  if p.primary ~= nil then c1 = hues[p.primary] end
-  if p.secondary ~= nil then c2 = hues[p.secondary] end
+  local c1, c2, h1, h2, hues
+  hues = HUE_PALETTES
+  h1 = 330
+  if p.primary ~= nil then h1 = p.primary:match('h(%d+)') end
+  c1 = hues['h'..h1]
+  if p.secondary ~= nil then 
+    h2 = p.secondary:match('h(%d+)')
+  else
+    h2 = (h1 + 210) % 360
+  end
+  c2 = hues['h'..h2]
   return {
-    primary = c1 or HUE_PALETTES.h330,
-    secondary = c2 or HUE_PALETTES.h225,
+    primary = c1,
+    secondary = c2,
   }
 end
 
