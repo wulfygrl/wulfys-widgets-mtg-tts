@@ -69,7 +69,6 @@ end
 function onLoad(saved_data)
   if pID=='w_utils' then
     Global.setVar('wulfy_utils', self)
-    chipButtons()
   else
     local function init() initMod(saved_data) end
     local function checkUtils() return (utils() ~= nil) end
