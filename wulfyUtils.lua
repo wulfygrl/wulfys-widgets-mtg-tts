@@ -1,9 +1,9 @@
--- Copy the code between UNIVERSAL FUNCTIONS and END UNIVERSAL to the top of 
--- any object in order to use this module's utility funcitons. 
-
---[[ UNIVERSAL FUNCTIONS ]]--
-moduleVersion = 0.01
+moduleVersion = 0.02
 pID = 'w_utils'
+-- Copy the code between UNIVERSAL FUNCTIONS and END UNIVERSAL to the top of
+-- any object in order to use this module's utility funcitons.
+
+--[[ UNIVERSAL ]] --
 LOG_STYLES = {}
 MOD_DATA = {
   modVersion = moduleVersion,
@@ -18,10 +18,11 @@ MOD_DATA = {
   },
 }
 ENC_DATA = {
-  pID=pID
+  pID = pID
 }
 -- retrieve the utils module
 function utils() return Global.getVar('wulfy_utils') end
+
 -- Log message wrapper for this module.
 function wLog(msg, pre, tags)
   utils().call('log_wrapper', {
@@ -32,23 +33,42 @@ function wLog(msg, pre, tags)
     tags = tags,
   })
 end
+
+-- Same but for debug messages.
+function wDebug(msg, pre, tags) if DEBUG then wLog(msg, pre, tags) end end
+
 -- register this module
-function registerModule() utils().call('registerWulfyMod', ENC_DATA) end
+function registerModule()
+  MOD_DATA.isRegistered = utils().call('registerWulfyMod', ENC_DATA)
+  chipButtons()
+end
+
 -- unregister this module
-function unRegisterModule() utils().call('unregisterWulfyMod', ENC_DATA) end
+function unregisterModule()
+  MOD_DATA.isRegistered = utils().call('unregisterWulfyMod', ENC_DATA)
+  chipButtons()
+end
+
 -- update this module
 function selfUpdate() utils().call('updateCheck', MOD_DATA) end
--- initialize colors
-function color() 
+
+function chipButtons()
+  colors() --init colors just in case
+  utils().call('drawChipButtons', { o = self, d = MOD_DATA })
+end
+
+-- return this module's colors, initializing them if needed.
+function colors()
   if MOD_DATA.colors.init ~= nil then
     MOD_DATA.colors = utils().call('getColors', MOD_DATA.colors.init)
   end
   return MOD_DATA.colors
 end
---[[ END UNIVERSAL ]]--
 
---[[ UTILITY FUNCTIONS ]]--
+--[[ END UNIVERSAL ]]     --
 
+--[[ UTILITY FUNCTIONS ]] --
+DEBUG = true
 --[[ Wrapper to color log messages according to the module's palette.
 params:
   pID: module's primary property ID
@@ -73,25 +93,170 @@ function registerWulfyMod(enc_data)
   local vals = enc_data.values or {}
   local menus = enc_data.menus or {}
   local enc = Global.getVar('Encoder')
-  if enc == nil then wLog('No encoder found') return end
-  for _, prop in ipairs(ENCDATA.properties) do repeat
-    if enc.call('APIpropertyExists', prop) then break end
-    enc.call('APIregisterProperty', prop)
-  until true end
-  for _, val in ipairs(ENCDATA.values) do repeat
-    if enc.call('APIvalueExists', val) then break end
-    enc.call('APIregisterValue', val)
-  until true end
-  for _, menu in ipairs(ENCDATA.menus) do
+  if enc == nil then
+    wLog('No encoder found')
+    return false
+  end
+  for _, prop in ipairs(props) do
+    repeat
+      if enc.call('APIpropertyExists', prop) then break end
+      enc.call('APIregisterProperty', prop)
+    until true
+  end
+  for _, val in ipairs(vals) do
+    repeat
+      if enc.call('APIvalueExists', val) then break end
+      enc.call('APIregisterValue', val)
+    until true
+  end
+  for _, menu in ipairs(menus) do
     enc.call('APIregisterMenu', menu)
+  end
+  return true
+end
+
+function unregisterWulfyMod(enc_data)
+  local props = enc_data.properties or {}
+  local enc = Global.getVar('Encoder')
+  if enc == nil then return false end
+  for i, prop in ipairs(props) do
+    if enc.call('APIpropertyExists', prop) then
+      enc.call('APIremoveProperty', prop)
+    end
+  end
+  return false
+end
+
+GITINFO = {
+  baseurl = 'https://raw.githubusercontent.com',
+  user = 'wulfygrl',
+  repo = 'wulfys-widgets-mtg-tts'
+}
+function updateCheck(mod_data)
+  local filename = mod_data.gitFileName
+  local modName = mod_data.modName
+  local moduleVersion = mod_data.modVersion
+  if filename == nil or modName == nil or moduleVersion == nil then
+    wLog('Missing module info. Skipping update.')
+  end
+  local giturl = string.format('%s/%s/%s/%s',
+    GITINFO.baseurl, GITINFO.user, GITINFO.repo, filename)
+  wDebug(modName .. " update check. Current: " .. moduleVersion)
+  wDebug('Git url: ' .. giturl)
+  WebRequest.get(giturl, function(wr)
+    if wr.is_error then
+      wLog('Error fetching code:\n' .. wr.error, '', 'error')
+      return
+    end
+    local gitVersion = tonumber(wr.text:match('moduleVersion%s=%s(%d+%.%d+)'))
+    if gitVersion == nil then
+      wLog('Couldn\'t parse git version.', '', 'error')
+      return
+    end
+    wDebug("Git version = " .. gitVersion)
+    if gitVersion > moduleVersion then
+      obj.script_code = wr.text
+      wDebug("Reloading " .. modName)
+      obj.reload()
+    end
+  end)
+end
+
+function drawChipButtons(p)
+  local obj = p.o
+  local data = p.d
+  if data == nil then
+    wLog('no mod_data passed to drawChipButtons')
+    return
+  end
+  local colors = data.colors or self.colors()
+  local title = data.modName or "MISSING"
+  local version = data.modVersion or "MISSING"
+  local isRegistered = data.isRegistered or false
+  local function makeButtonsObj()
+    local buttons = {
+      title_bg = {
+        label = '',
+        click_function = "pass",
+        function_owner = self,
+        position = { 0, 0.15, -0.25 },
+        rotation = { 180, 0, 0 },
+        height = 240,
+        width = 525,
+        color = colors.primary.dark
+      },
+      title_txt = {
+        label = title:gsub(' ', '\n'),
+        click_function = "pass",
+        function_owner = self,
+        position = { 0, 0.15, -0.25 },
+        height = 0,
+        width = 0,
+        font_size = 100,
+        font_color = colors.primary.light
+      },
+      version = {
+        label = 'VERSION' .. version,
+        click_function = "pass",
+        function_owner = self,
+        position = { 0, 0.15, 0.075 },
+        rotation = { 0, 0, 0 },
+        height = 0,
+        width = 0,
+        font_size = 60,
+        font_color = colors.primary.dark
+      },
+      update = {
+        label = "Update",
+        click_function = "selfUpdate",
+        function_owner = obj,
+        position = { 0, 0.15, 0.27 },
+        height = 60,
+        width = 450,
+        color = colors.primary.mlight,
+        hover_color = colors.primary.mid,
+        font_color = colors.primary.dark
+      },
+      register = {
+        label = 'Register',
+        click_function = 'registerModule',
+        function_owner = obj,
+        position = { 0, 0.15, 0.55 },
+        rotation = { 0, 0, 0 },
+        font_size = 60,
+        height = 60,
+        width = 425,
+        color = colors.secondary.mlight,
+        hover_color = colors.secondary.mid,
+        font_color = colors.secondary.dark
+      }
+    }
+    if isRegistered then
+      buttons.register.label = 'Unregister'
+      buttons.register.click_function = 'unregisterModule'
+      buttons.register.color = colors.primary.mlight
+      buttons.register.hover_color = colors.primary.mid
+      buttons.register.font_color = colors.primary.dark
+    end
+    for name, btn in pairs((data.extraButtons or {})) do
+      buttons[name] = btn
+    end
+    return buttons
+  end
+  local buttons = data.buttonsOverride or makeButtonsObj()
+  obj.clearButtons()
+  for name, btn in pairs(buttons) do
+    if not pcall(function() obj.createButton(btn) end) then
+      wLog('Error drawing ' .. name .. 'button.')
+    else
+      wDebug('Drew button ' .. name)
+    end
   end
 end
 
-function unregisterWulfyMod(enc_data) end
-function updateCheck(mod_data) end
 function getColors(p)
-  local c1,c2
-  local hues = utils().HUE_PALETTES
+  local c1, c2
+  local hues = HUE_PALETTES
   if p.primary ~= nil then c1 = hues[p.primary] end
   if p.secondary ~= nil then c2 = hues[p.secondary] end
   return {
@@ -100,7 +265,11 @@ function getColors(p)
   }
 end
 
-function onLoad() Global.setVar('wulfy_utils', self) end
+function onLoad()
+  Global.setVar('wulfy_utils', self)
+  chipButtons()
+end
+
 function pass() return nil end
 
 HUE_PALETTES = {
