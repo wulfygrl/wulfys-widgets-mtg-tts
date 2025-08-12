@@ -140,7 +140,7 @@ function updateCheck(mod_data)
   if filename == nil or modName == nil or moduleVersion == nil then
     wLog('Missing module info. Skipping update.')
   end
-  local giturl = string.format('%s/%s/%s/refs/head/%s/%s',
+  local giturl = string.format('%s/%s/%s/refs/heads/%s/%s',
     GITINFO.baseurl, GITINFO.user, GITINFO.repo, GITINFO.branch, filename)
   wDebug(modName .. " update check. Current: " .. moduleVersion)
   wDebug('Git url: ' .. giturl)
