@@ -130,7 +130,8 @@ end
 GITINFO = {
   baseurl = 'https://raw.githubusercontent.com',
   user = 'wulfygrl',
-  repo = 'wulfys-widgets-mtg-tts'
+  repo = 'wulfys-widgets-mtg-tts',
+  branch = 'main'
 }
 function updateCheck(mod_data)
   local filename = mod_data.gitFileName
@@ -139,8 +140,8 @@ function updateCheck(mod_data)
   if filename == nil or modName == nil or moduleVersion == nil then
     wLog('Missing module info. Skipping update.')
   end
-  local giturl = string.format('%s/%s/%s/%s',
-    GITINFO.baseurl, GITINFO.user, GITINFO.repo, filename)
+  local giturl = string.format('%s/%s/%s/refs/head/%s/%s',
+    GITINFO.baseurl, GITINFO.user, GITINFO.repo, GITINFO.branch, filename)
   wDebug(modName .. " update check. Current: " .. moduleVersion)
   wDebug('Git url: ' .. giturl)
   WebRequest.get(giturl, function(wr)
