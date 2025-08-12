@@ -79,10 +79,12 @@ function onLoad(saved_data)
           log('Failed to fetch utils. wulfy mods will not function.','','error')
           return
         end
-        utils_data = self.getData()
-        utils_data.Nickname = 'Wulfy Utils'
-        utils_data.script_code = wr.text
-        utils_data.script_State = ''
+        utils_data = self.getData() + {
+            Nickname = 'Wulfy Utils',
+            Description = 'Utilities for wulfy modules',
+            script_code = wr.text,
+            script_state=''
+        }
         spawnObjectData({
           data = utils_data,
           position = self.getPosition(),
