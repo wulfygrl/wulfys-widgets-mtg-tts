@@ -50,7 +50,9 @@ function unregisterModule()
 end
 
 -- update this module
-function selfUpdate() utils().call('updateCheck', MOD_DATA) end
+function selfUpdate()
+  utils().call('updateCheck', { o = self, d = MOD_DATA })
+end
 
 function chipButtons()
   colors() --init colors just in case
@@ -133,7 +135,13 @@ GITINFO = {
   repo = 'wulfys-widgets-mtg-tts',
   branch = 'main'
 }
-function updateCheck(mod_data)
+function updateCheck(p)
+  local mod_data = p.d
+  local obj = p.o
+  if mod_data==nil or obj ==nil then
+    wLog('Missing argument to updateCheck.')
+    return
+  end
   local filename = mod_data.gitFileName
   local modName = mod_data.modName
   local moduleVersion = mod_data.modVersion
