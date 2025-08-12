@@ -71,28 +71,24 @@ function onLoad(saved_data)
     Global.setVar('wulfy_utils', self)
     chipButtons()
   else
-    local utils_data = {
-      data = {
-        Name = 'PiecePack_Suns',
-        Nickname = 'Wulfy Utils'
-      },
-      position = Vector(0,0,0),
-      scale = 0.65 * Vector(1,1,1),
-      callback_function = function() Wait.frames() end
-    }
     local function init() initMod(saved_data) end
     local function checkUtils() return (utils() ~= nil) end
     local function spawnUtils()
       giturl = 'https://raw.githubusercontent.com/wulfygrl/wulfys-widgets-mtg-tts/refs/heads/main/wulfyUtils.lua'
-      utilsObj = spawnObjectData(utils_data)
       WebRequest.get(giturl, function(wr)
         if wr.is_error then
           log('Failed to fetch utils. wulfy mods will not function.','','error')
           return
         end
-        utilsObj.script_code = wr.text
-        utilsObj.reload()
-        Wait.frames(init)
+        utils_data = self.getData()
+        utils_data.Nickname = 'Wulfy Utils'
+        utils_data.script_code = wr.text
+        utils_data.script_State = ''
+        spawnObjectData({
+          data = utils_data,
+          position = self.getPosition(),
+          callback_function = init
+        })
       end)
     end
     Wait.condition(init, checkUtils, 2, spawnUtils)
