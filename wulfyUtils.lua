@@ -67,10 +67,10 @@ function colors()
 end
 
 function onLoad(saved_data)
-  if pID=='w_utils' then
+  if self.getDescription() == 'wulfy_utils' then
     Global.setVar('wulfy_utils', self)
+    chipButtons()
   else
-    log(self.getGUID() .. ' pid: ' .. pID)
     local function init() initMod(saved_data) end
     local function checkUtils() return (utils() ~= nil) end
     local function spawnUtils()
@@ -80,12 +80,11 @@ function onLoad(saved_data)
           log('Failed to fetch utils. wulfy mods will not function.','','error')
           return
         end
-        utils_data = self.getData() + {
-            Nickname = 'Wulfy Utils',
-            Description = 'Utilities for wulfy modules',
-            script_code = wr.text,
-            script_state=''
-        }
+        utils_data = self.getData()
+        utils_data.Nickname = 'Wulfy Utils'
+        utils_data.Description = 'w_utils'
+        utils_data.script_code = wr.text
+        utils_data.script_State = ''
         spawnObjectData({
           data = utils_data,
           position = self.getPosition(),
