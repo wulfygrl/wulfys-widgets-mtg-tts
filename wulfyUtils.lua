@@ -84,7 +84,6 @@ function onLoad(saved_data)
           return
         end
         local utils_data = self.getData()
-        log(utils_data)
         utils_data.Nickname = 'Wulfy Utils'
         utils_data.Description = 'wulfy_utils'
         utils_data.LuaScript = wr.text
@@ -92,9 +91,9 @@ function onLoad(saved_data)
         
         local utils_obj = spawnObjectData({
           data = utils_data,
-          position = self.getPosition() + Vector(1,0,0),
-          callback_function = init
+          position = self.getPosition() + Vector(1,0,0)
         })
+        init()
       end)
     end
     Wait.condition(init, checkUtils, 2, spawnUtils)
