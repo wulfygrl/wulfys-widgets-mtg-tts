@@ -21,8 +21,28 @@ ENC_DATA = {
 }
 -- retrieve the utils module
 function utils()
-  
-  return Global.getVar('wulfy_utils') 
+  r = Global.getVar('wulfy_utils')
+  if r == nil then
+    local giturl = 'https://raw.githubusercontent.com/wulfygrl/wulfys-widgets-mtg-tts/refs/heads/main/wulfyUtils.lua'
+    WebRequest.get(giturl, function(wr)
+      if wr.is_error then
+        log('Failed to fetch utils. wulfy mods will not function.','','error')
+        return
+      end
+      local utils_data = self.getData()
+      utils_data.Nickname = 'Wulfy Utils'
+      utils_data.Description = 'wulfy_utils'
+      utils_data.LuaScript = wr.text
+      utils_data.LuaScriptState = ''
+      
+      local utils_obj = spawnObjectData({
+        data = utils_data,
+        position = self.getPosition() + Vector(1,0,0)
+      })
+      init()
+    end)
+  end
+  return r
 end
 
 -- Log message wrapper for this module.
@@ -70,40 +90,49 @@ function colors()
 end
 
 function onLoad(saved_data)
-  if pID == 'w_utils' then
-    log('did it right!')
-    Global.setVar('wulfy_utils', self)
-    chipButtons()
-  end
   if self.getDescription() == 'wulfy_utils' then
     Global.setVar('wulfy_utils', self)
-    chipButtons()
-  else
-    local function checkUtils() return (utils() ~= nil) end
-    local function init() Wait.condition(function() initMod(saved_data) end, checkUtils) end
-    local function spawnUtils()
-      giturl = 'https://raw.githubusercontent.com/wulfygrl/wulfys-widgets-mtg-tts/refs/heads/main/wulfyUtils.lua'
-      WebRequest.get(giturl, function(wr)
-        if wr.is_error then
-          log('Failed to fetch utils. wulfy mods will not function.','','error')
-          return
-        end
-        local utils_data = self.getData()
-        utils_data.Nickname = 'Wulfy Utils'
-        utils_data.Description = 'wulfy_utils'
-        utils_data.LuaScript = wr.text
-        utils_data.LuaScriptState = ''
-        
-        local utils_obj = spawnObjectData({
-          data = utils_data,
-          position = self.getPosition() + Vector(1,0,0)
-        })
-        init()
-      end)
-    end
-    Wait.condition(init, checkUtils, 2, spawnUtils)
   end
+  Wait.condition(
+    function() initMod(saved_data) end,
+    function() return (utils() ~= nil) end, 
+  2)
 end
+-- function onLoad(saved_data)
+--   if pID == 'w_utils' then
+--     log('did it right!')
+--     Global.setVar('wulfy_utils', self)
+--     chipButtons()
+--   end
+--   if self.getDescription() == 'wulfy_utils' then
+--     Global.setVar('wulfy_utils', self)
+--     chipButtons()
+--   else
+--     local function checkUtils() return (utils() ~= nil) end
+--     local function init() Wait.condition(function() initMod(saved_data) end, checkUtils) end
+--     local function spawnUtils()
+--       giturl = 'https://raw.githubusercontent.com/wulfygrl/wulfys-widgets-mtg-tts/refs/heads/main/wulfyUtils.lua'
+--       WebRequest.get(giturl, function(wr)
+--         if wr.is_error then
+--           log('Failed to fetch utils. wulfy mods will not function.','','error')
+--           return
+--         end
+--         local utils_data = self.getData()
+--         utils_data.Nickname = 'Wulfy Utils'
+--         utils_data.Description = 'wulfy_utils'
+--         utils_data.LuaScript = wr.text
+--         utils_data.LuaScriptState = ''
+        
+--         local utils_obj = spawnObjectData({
+--           data = utils_data,
+--           position = self.getPosition() + Vector(1,0,0)
+--         })
+--         init()
+--       end)
+--     end
+--     Wait.condition(init, checkUtils, 2, spawnUtils)
+--   end
+-- end
 -- [[ END UNIVERSAL ]]--
 
 -- [[ UTILITY FUNCTIONS ]] --
