@@ -1,4 +1,4 @@
-moduleVersion = 0.02
+moduleVersion = 0.03
 pID = 'w_utils'
 -- Copy the code between UNIVERSAL FUNCTIONS and END UNIVERSAL to the top of
 -- any object in order to use this module's utility funcitons.
@@ -25,8 +25,8 @@ function utils() return Global.getVar('wulfy_utils') end
 -- Wrap json.lua object
 function json()
   return {
-    decode = function(s) return utils().call('jsonDecode',{str=s}) end,
-    encode = function(o) return utils().call('jsonEncode',{obj=o}) end
+    decode = function(s) return utils().call('jsonDecode', { str = s }) end,
+    encode = function(o) return utils().call('jsonEncode', { obj = o }) end
   }
 end
 
@@ -121,13 +121,10 @@ end
 function initMod(save_data)
   Global.setVar('wulfy_utils', self)
   chipButtons()
-  myJson = '{"name":"something"}'
-  decoded = jsonLua().decode(myJson)
-  Wait.frames(function() wLog(decoded) end)
 end
 
 -- [[ UTILITY FUNCTIONS ]] --
-DEBUG = true
+DEBUG = false
 --[[ Wrapper to color log messages according to the module's palette.
 params:
   pID: module's primary property ID
@@ -508,7 +505,25 @@ function getColors(p)
   }
 end
 
-function jsonDecode(p) return jsonLua().decode(p.str) end
+function jsonDecode(p)
+  local function fixUnicode(s)
+    escape_chars = {
+      ["\\"] = "\\",
+      ["\""] = "\\",
+      ["\b"] = "\\",
+      ["\f"] = "\\",
+      ["\n"] = "\\",
+      ["\r"] = "\\",
+      ["\t"] = "\\",
+    }
+    return s:gsub("\\u(%x%x%x%x)", function(x)
+      ch = string.char(tonumber(x, 16))
+      return (escape_chars[ch] or '') .. ch
+    end)
+  end
+  return jsonLua().decode(fixUnicode(p.str))
+end
+
 function jsonEncode(p) return jsonLua().encode(p.obj) end
 
 function jsonLua()
