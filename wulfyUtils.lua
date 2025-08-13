@@ -87,8 +87,7 @@ function onLoad(saved_data)
         utils_data.script_State = ''
         spawnObjectData({
           data = utils_data,
-          position = self.getPosition(),
-          callback_function = init
+          position = self.getPosition() + Vector(3,0,0)
         })
       end)
     end
