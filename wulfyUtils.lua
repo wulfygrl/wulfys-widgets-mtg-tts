@@ -34,8 +34,7 @@ function utils()
     utils_data.Description = 'wulfy_utils'
     utils_data.LuaScript = wr.text
     utils_data.LuaScriptState = ''
-    
-    local utils_obj = spawnObjectData({
+    spawnObjectData({
       data = utils_data,
       position = self.getPosition() + Vector(1,0,0)
     })
@@ -93,8 +92,7 @@ function onLoad(saved_data)
   end
   Wait.condition(
     function() initMod(saved_data) end,
-    function() return (utils() ~= nil) end, 
-  2)
+    function() return (utils() ~= nil) end)
 end
 -- function onLoad(saved_data)
 --   if pID == 'w_utils' then
