@@ -90,7 +90,7 @@ function colors()
 end
 
 function onLoad(saved_data)
-  if self.getDescription() == 'wulfy_utils' then
+  if pID == 'w_utils' then
     Global.setVar('wulfy_utils', self)
   end
   Wait.condition(
