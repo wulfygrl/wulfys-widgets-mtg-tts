@@ -1,9 +1,8 @@
-moduleVersion = 0.02
+moduleVersion = 0.03
 pID = 'w_utils'
 -- Copy the code between UNIVERSAL FUNCTIONS and END UNIVERSAL to the top of
 -- any object in order to use this module's utility funcitons.
 
--- [[ UNIVERSAL ]] --
 MOD_DATA = {
   modVersion = moduleVersion,
   modID = pID,
@@ -19,8 +18,12 @@ MOD_DATA = {
 ENC_DATA = {
   pID = pID
 }
+-- [[ UNIVERSAL ]] --
 -- retrieve the utils module
 function utils() return Global.getVar('wulfy_utils') end
+
+-- get json.lua object
+function json() return utils().call('jsonLua') end
 
 -- Log message wrapper for this module.
 function wLog(msg, pre, tags)
@@ -66,13 +69,18 @@ function colors()
   return MOD_DATA.colors
 end
 
-function onLoad(saved_data)
-  local function init() initMod(saved_data) end
+function onLoad(save_data)
+  s = JSON.decode(save_data)
+  local function init() initMod(s) end
+  local function utilsExists()
+    return (utils() or (s.utilsGUID and getObjectFromGUID(s.utilsGUID))) ~= nil
+  end
+  local function utilsSpawned() return utils() ~= nil end
   local function spawnUtils()
     giturl = 'https://raw.githubusercontent.com/wulfygrl/wulfys-widgets-mtg-tts/refs/heads/main/wulfyUtils.lua'
     WebRequest.get(giturl, function(wr)
       if wr.is_error then
-        log('Failed to fetch utils. wulfy mods will not function.','','error')
+        log('Failed to fetch utils. wulfy mods will not function.', '', 'error')
         return
       end
       local utils_data = self.getData()
@@ -82,17 +90,25 @@ function onLoad(saved_data)
       utils_data.LuaScriptState = ''
       spawnObjectData({
         data = utils_data,
-        position = self.getPosition() + Vector(1,0,0),
+        position = self.getPosition() + Vector(1, 0, 0),
         callback_function = init
       })
     end)
   end
-  if pID == 'w_utils' then
-    Global.setVar('wulfy_utils', self)
-    chipButtons()
-  elseif utils() == nil then 
-    spawnUtils() 
+  -- if this is utils obj or we already have utils, skip to init.
+  if pID == 'w_utils' or utilsSpawned() then
+    init()
+  elseif not utilsExists() then
+    spawnUtils()
+  else
+    Wait.condition(init, utilsSpawned, 2, spawnUtils)
   end
+end
+
+function onSave()
+  save_data = (saveMod ~= nil and saveMod() or {})
+  if utils() ~= nil then save_data.utilsGUID = utils().getGUID() end
+  return JSON.encode(save_data)
 end
 -- [[ END UNIVERSAL ]]--
 
@@ -157,13 +173,13 @@ function unregisterWulfyMod(enc_data)
   return false
 end
 
-GITINFO = {
-  baseurl = 'https://raw.githubusercontent.com',
-  user = 'wulfygrl',
-  repo = 'wulfys-widgets-mtg-tts',
-  branch = 'main'
-}
 function updateCheck(p)
+  local GITINFO = {
+    baseurl = 'https://raw.githubusercontent.com',
+    user = 'wulfygrl',
+    repo = 'wulfys-widgets-mtg-tts',
+    branch = 'main'
+  }
   local mod_data = p.d
   local obj = p.o
   if mod_data == nil or obj == nil then
