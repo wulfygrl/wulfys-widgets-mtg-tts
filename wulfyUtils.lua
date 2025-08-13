@@ -22,8 +22,13 @@ ENC_DATA = {
 -- retrieve the utils module
 function utils() return Global.getVar('wulfy_utils') end
 
--- get json.lua object
-function json() return utils().call('jsonLua') end
+-- Wrap json.lua object
+function json()
+  return {
+    decode = function(s) return utils().call('jsonDecode',{str=s}) end,
+    encode = function(o) return utils().call('jsonEncode',{obj=o}) end
+  }
+end
 
 -- Log message wrapper for this module.
 function wLog(msg, pre, tags)
@@ -116,6 +121,9 @@ end
 function initMod(save_data)
   Global.setVar('wulfy_utils', self)
   chipButtons()
+  myJson = '{"name":"something"}'
+  decoded = jsonLua().decode(myJson)
+  Wait.frames(function() wLog(decoded) end)
 end
 
 -- [[ UTILITY FUNCTIONS ]] --
@@ -500,6 +508,9 @@ function getColors(p)
   }
 end
 
+function jsonDecode(p) return jsonLua().decode(p.str) end
+function jsonEncode(p) return jsonLua().encode(p.obj) end
+
 function jsonLua()
   --
   -- json.lua
@@ -859,7 +870,7 @@ function jsonLua()
     decode_error(str, idx, "unexpected character '" .. chr .. "'")
   end
 
-  function json.decode(str)
+  json.decode = function(str)
     if type(str) ~= "string" then
       error("expected argument of type string, got " .. type(str))
     end
