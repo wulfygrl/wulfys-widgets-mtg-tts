@@ -113,6 +113,11 @@ end
 
 -- [[ END UNIVERSAL ]]--
 
+function initMod(save_data)
+  Global.setVar('wulfy_utils', self)
+  chipButtons()
+end
+
 -- [[ UTILITY FUNCTIONS ]] --
 DEBUG = true
 --[[ Wrapper to color log messages according to the module's palette.
