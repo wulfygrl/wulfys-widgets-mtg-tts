@@ -98,7 +98,7 @@ function onLoad(saved_data)
         init()
       end)
     end
-    Wait.condition(init, checkUtils, 2, spawnUtils)
+    Wait.condition(init, checkUtils, 1, spawnUtils)
   end
 end
 -- [[ END UNIVERSAL ]]--
