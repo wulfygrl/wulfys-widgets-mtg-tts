@@ -22,27 +22,25 @@ ENC_DATA = {
 -- retrieve the utils module
 function utils()
   r = Global.getVar('wulfy_utils')
-  if r == nil then
-    local giturl = 'https://raw.githubusercontent.com/wulfygrl/wulfys-widgets-mtg-tts/refs/heads/main/wulfyUtils.lua'
-    WebRequest.get(giturl, function(wr)
-      if wr.is_error then
-        log('Failed to fetch utils. wulfy mods will not function.','','error')
-        return
-      end
-      local utils_data = self.getData()
-      utils_data.Nickname = 'Wulfy Utils'
-      utils_data.Description = 'wulfy_utils'
-      utils_data.LuaScript = wr.text
-      utils_data.LuaScriptState = ''
-      
-      local utils_obj = spawnObjectData({
-        data = utils_data,
-        position = self.getPosition() + Vector(1,0,0)
-      })
-      init()
-    end)
-  end
-  return r
+  if r ~= nil then return r end
+  local giturl = 'https://raw.githubusercontent.com/wulfygrl/wulfys-widgets-mtg-tts/refs/heads/main/wulfyUtils.lua'
+  WebRequest.get(giturl, function(wr)
+    if wr.is_error then
+      log('Failed to fetch utils. wulfy mods will not function.','','error')
+      return
+    end
+    local utils_data = self.getData()
+    utils_data.Nickname = 'Wulfy Utils'
+    utils_data.Description = 'wulfy_utils'
+    utils_data.LuaScript = wr.text
+    utils_data.LuaScriptState = ''
+    
+    local utils_obj = spawnObjectData({
+      data = utils_data,
+      position = self.getPosition() + Vector(1,0,0)
+    })
+  end)
+  return nil
 end
 
 -- Log message wrapper for this module.
