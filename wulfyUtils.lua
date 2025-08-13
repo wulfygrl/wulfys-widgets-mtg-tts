@@ -20,7 +20,10 @@ ENC_DATA = {
   pID = pID
 }
 -- retrieve the utils module
-function utils() return Global.getVar('wulfy_utils') end
+function utils()
+  
+  return Global.getVar('wulfy_utils') 
+end
 
 -- Log message wrapper for this module.
 function wLog(msg, pre, tags)
@@ -82,7 +85,7 @@ function onLoad(saved_data)
         end
         utils_data = self.getData()
         utils_data.Nickname = 'Wulfy Utils'
-        utils_data.Description = 'w_utils'
+        utils_data.Description = 'wulfy_utils'
         utils_data.script_code = wr.text
         utils_data.script_State = ''
         spawnObjectData({
