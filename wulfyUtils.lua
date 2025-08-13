@@ -20,27 +20,7 @@ ENC_DATA = {
   pID = pID
 }
 -- retrieve the utils module
-function utils()
-  r = Global.getVar('wulfy_utils')
-  if r ~= nil then return r end
-  local giturl = 'https://raw.githubusercontent.com/wulfygrl/wulfys-widgets-mtg-tts/refs/heads/main/wulfyUtils.lua'
-  WebRequest.get(giturl, function(wr)
-    if wr.is_error then
-      log('Failed to fetch utils. wulfy mods will not function.','','error')
-      return
-    end
-    local utils_data = self.getData()
-    utils_data.Nickname = 'Wulfy Utils'
-    utils_data.Description = 'wulfy_utils'
-    utils_data.LuaScript = wr.text
-    utils_data.LuaScriptState = ''
-    spawnObjectData({
-      data = utils_data,
-      position = self.getPosition() + Vector(1,0,0)
-    })
-  end)
-  return nil
-end
+function utils() return Global.getVar('wulfy_utils') end
 
 -- Log message wrapper for this module.
 function wLog(msg, pre, tags)
@@ -88,11 +68,35 @@ end
 
 function onLoad(saved_data)
   if pID == 'w_utils' then
-    Global.setVar('wulfy_utils', self)
+    log('did it right!')
   end
-  Wait.condition(
-    function() initMod(saved_data) end,
-    function() return (utils() ~= nil) end)
+  if self.getDescription() == 'wulfy_utils' then
+    Global.setVar('wulfy_utils', self)
+    chipButtons()
+  else
+    local function checkUtils() return (utils() ~= nil) end
+    local function init() Wait.condition(function() initMod(saved_data) end, checkUtils) end
+    local function spawnUtils()
+      giturl = 'https://raw.githubusercontent.com/wulfygrl/wulfys-widgets-mtg-tts/refs/heads/main/wulfyUtils.lua'
+      WebRequest.get(giturl, function(wr)
+        if wr.is_error then
+          log('Failed to fetch utils. wulfy mods will not function.','','error')
+          return
+        end
+        local utils_data = self.getData()
+        utils_data.Nickname = 'Wulfy Utils'
+        utils_data.Description = 'wulfy_utils'
+        utils_data.LuaScript = wr.text
+        utils_data.LuaScriptState = ''
+        local utils_obj = spawnObjectData({
+          data = utils_data,
+          position = self.getPosition() + Vector(1,0,0),
+          callback_function = init
+        })
+      end)
+    end
+    Wait.condition(init, checkUtils, 2, spawnUtils)
+  end
 end
 -- function onLoad(saved_data)
 --   if pID == 'w_utils' then
