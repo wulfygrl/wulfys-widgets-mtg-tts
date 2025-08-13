@@ -70,6 +70,11 @@ function colors()
 end
 
 function onLoad(saved_data)
+  if pID == 'w_utils' then
+    log('did it right!')
+    Global.setVar('wulfy_utils', self)
+    chipButtons()
+  end
   if self.getDescription() == 'wulfy_utils' then
     Global.setVar('wulfy_utils', self)
     chipButtons()
