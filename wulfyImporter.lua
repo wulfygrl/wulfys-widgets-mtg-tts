@@ -1,151 +1,125 @@
-moduleVersion = 0.02
+moduleVersion = 0.03
 pID = "w_importer"
-modName = "Wulfy Importer"
 -- Wulfy Importer by @wulfygrl
 -- Built for use with the Encoder by Tipsy Hobbit (steam_id: 13465982)
 --   (but will work to import cards without it)
 -- Necessary for supporting my Wulfy Widgets modules.
 
---[[ Initialize constants ]]--
-
-GITHUB_SOURCE = 'https://raw.githubusercontent.com/wulfygrl/wulfys-widgets-mtg-tts/main/wulfyImporter.lua'
-COLORS = {
-  dark={0, 59/255, 32/255},
-  mdark={15/255, 88/255, 55/255},
-  mid={39/255, 117/255, 82/255},
-  mlight={73/255, 147/255, 113/255},
-  light={117/255,176/255,149/255}
+MOD_DATA = {
+  modVersion = moduleVersion,
+  modID = pID,
+  modName = 'Wulfy Importer',
+  gitFileName = 'wulfyImporter.lua',
+  colors = {
+    init = {
+      primary = 'h195',
+      secondary = 'h30'
+    }
+  },
 }
---Initialize ENCDATA, add to it later with table.insert
-ENCDATA = {
-  properties={},
-  values={}
+ENC_DATA = {
+  pID = pID
 }
+-- [[ UNIVERSAL ]] --
+-- retrieve the utils module
+function utils() return Global.getVar('wulfy_utils') end
 
---[[ Helper Functions ]]--
+-- Wrap json.lua object
+function json()
+  return {
+    decode = function(s) return utils().call('jsonDecode',{str=s}) end,
+    encode = function(o) return utils().call('jsonEncode',{obj=o}) end
+  }
+end
 
--- Noop function for display buttons 
-function pass() return nil end
--- Log wrapper for colors
-logStyle(pID, COLORS.mlight, "", "")
+-- Log message wrapper for this module.
 function wLog(msg, pre, tags)
-  tags = tags or pID 
-  log(msg, pre, tags)
+  utils().call('log_wrapper', {
+    pID = MOD_DATA.modID,
+    color = MOD_DATA.colors.primary.mlight,
+    msg = msg,
+    pre = pre,
+    tags = tags,
+  })
 end
 
---[[ Module Setup ]]--
+-- Same but for debug messages.
+function wDebug(msg, pre, tags) if DEBUG then wLog(msg, pre, tags) end end
 
-function onLoad(saved_data)
-  chipButtons()
-end
--- Checks for newer version on Github and applies if found.
-function selfUpdate()
-  wLog(modName .. " update check. Current: ".. moduleVersion)
-  WebRequest.get(GITHUB_SOURCE, function(wr)
-    if wr.is_error then
-      wLog('Error fetching code from GitHub:\n'..wr.error, '', 'error')
-      return
-    end
-    local gitVersion = tonumber(wr.text:match('moduleVersion%s=%s(%d+%.%d+)'))
-    if gitVersion == nil then 
-      wLog('Couldn\'t parse git version.','','error') 
-      return 
-    end
-    wLog("Git version = "..gitVersion)
-    if gitVersion > moduleVersion then
-      self.script_code = wr.text
-      wLog("Reloading "..modName)
-      self.reload()
-    end
-  end)
-end
--- Redraws buttons on module chip
-function chipButtons()
-  self.clearButtons()
-  self.createButton({ -- Title Background
-    click_function="pass",
-    function_owner=self,
-    position={0,0.15,-0.25},
-    rotation={180,0,0},
-    height=240,
-    width=525,
-    color=COLORS.dark
-  })
-  self.createButton({ -- Title
-    label= modName:gsub(' ','\n'),
-    click_function="pass",
-    function_owner=self,
-    position={0,0.15,-0.25},
-    height= 0,
-    width= 0,
-    color = COLORS.dark,
-    font_size = 100,
-    font_color = COLORS.light
-  })
-  self.createButton({ -- Version info
-    label = "VERSION "..moduleVersion,
-    click_function="pass",
-    function_owner=self,
-    position={0,0.15,0.075},
-    rotation = {0,0,0},
-    height=0,
-    width=0,
-    font_size = 60,
-    font_color = COLORS.dark
-  })
-  self.createButton({ -- Update Button
-    label="Update",
-    click_function="selfUpdate",
-    function_owner=self,
-    position={0,0.15,0.27},
-    color=COLORS.mid,
-    hover_color=COLORS.mdark,
-    font_color=COLORS.dark,
-    height=60,
-    width=450,
-  })
-  self.createButton({ -- Register Toggle Button
-    label=(isRegistered and 'Unr' or 'R')..'egister',
-    click_function=(isRegistered and 'unR' or 'r')..'egisterModule',
-    function_owner=self,
-    position={0,0.15,0.55},
-    rotation = {0,0,0},
-    color = (isRegistered and COLORS.mid or COLORS.light),
-    hover_color = (isRegistered and COLORS.mlight or COLORS.mdark),
-    font_color = (isRegistered and COLORS.light or COLORS.dark),
-    font_size = 60,
-    height=60,
-    width=425,
-  })
-end
--- Registers module with Encoder, or skips if none found.
+-- register this module
 function registerModule()
-  local enc = Global.getVar('Encoder')
-  if enc == nil then wLog('No encoder found.') return end
-  for i,prop in ipairs(ENCDATA.properties) do repeat
-    if enc.call('APIpropertyExists', prop) then break end
-    enc.call('APIregisterProperty', prop)
-  until true end
-  for i,val in ipairs(ENCDATA.values) do repeat
-    if enc.call('APIvalueExists', val) then break end
-    enc.call('APIregisterValue', val)
-  until true end
-  isRegistered = true
+  MOD_DATA.isRegistered = utils().call('registerWulfyMod', ENC_DATA)
   chipButtons()
 end
--- Removes registered properties from Encoder.
-function unRegisterModule()
-  local enc = Global.getVar('Encoder')
-  if enc ~= nil then 
-    for i,prop in ipairs(ENCDATA.properties) do 
-      if enc.call('APIpropertyExists', prop) then 
-        enc.call('APIremoveProperty', prop)
-      end
-    end
+
+-- unregister this module
+function unregisterModule()
+  MOD_DATA.isRegistered = utils().call('unregisterWulfyMod', ENC_DATA)
+  chipButtons()
+end
+
+-- update this module
+function selfUpdate()
+  utils().call('updateCheck', { o = self, d = MOD_DATA })
+end
+
+function chipButtons()
+  colors() --init colors just in case
+  utils().call('drawChipButtons', { o = self, d = MOD_DATA })
+end
+
+-- return this module's colors, initializing them if needed.
+function colors()
+  if MOD_DATA.colors.init ~= nil then
+    MOD_DATA.colors = utils().call('getColors', MOD_DATA.colors.init)
   end
-  isRegistered = false
-  chipButtons()
+  return MOD_DATA.colors
 end
 
---[[ End module setup functions ]]--
+function onLoad(save_data)
+  s = JSON.decode(save_data)
+  local function init() initMod(s) end
+  local function utilsExists()
+    return (utils() or (s.utilsGUID and getObjectFromGUID(s.utilsGUID))) ~= nil
+  end
+  local function utilsSpawned() return utils() ~= nil end
+  local function spawnUtils()
+    giturl = 'https://raw.githubusercontent.com/wulfygrl/wulfys-widgets-mtg-tts/refs/heads/main/wulfyUtils.lua'
+    WebRequest.get(giturl, function(wr)
+      if wr.is_error then
+        log('Failed to fetch utils. wulfy mods will not function.', '', 'error')
+        return
+      end
+      local utils_data = self.getData()
+      utils_data.Nickname = 'Wulfy Utils'
+      utils_data.Description = 'wulfy_utils'
+      utils_data.LuaScript = wr.text
+      utils_data.LuaScriptState = ''
+      spawnObjectData({
+        data = utils_data,
+        position = self.getPosition() + Vector(1, 0, 0),
+        callback_function = init
+      })
+    end)
+  end
+  -- if this is utils obj or we already have utils, skip to init.
+  if pID == 'w_utils' or utilsSpawned() then
+    init()
+  elseif not utilsExists() then
+    spawnUtils()
+  else
+    Wait.condition(init, utilsSpawned, 2, spawnUtils)
+  end
+end
 
+function onSave()
+  save_data = (saveMod ~= nil and saveMod() or {})
+  if utils() ~= nil then save_data.utilsGUID = utils().getGUID() end
+  return JSON.encode(save_data)
+end
+
+-- [[ END UNIVERSAL ]]--
+
+function initMod(s)
+  chipButtons()
+end
