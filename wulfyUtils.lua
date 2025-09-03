@@ -1,4 +1,4 @@
-moduleVersion = 0.03
+moduleVersion = 0.04
 pID = 'w_utils'
 -- Copy the code between UNIVERSAL FUNCTIONS and END UNIVERSAL to the top of
 -- any object in order to use this module's utility funcitons.
@@ -220,8 +220,10 @@ function updateCheck(p)
     wDebug("Git version = " .. gitVersion)
     if gitVersion > moduleVersion then
       obj.script_code = wr.text
-      wDebug("Reloading " .. modName)
+      wLog("Update found. Reloading " .. modName)
       obj.reload()
+    else
+      wLog('No update found for '..modName..'.')
     end
   end)
 end
@@ -521,10 +523,10 @@ function jsonDecode(p)
       return (escape_chars[ch] or '') .. ch
     end)
   end
-  return jsonLua().decode(fixUnicode(p.str))
+  return jsonLua().decode(fixUnicode(p.args[1]))
 end
 
-function jsonEncode(p) return jsonLua().encode(p.obj) end
+function jsonEncode(p) return jsonLua().encode(p.args[1]) end
 
 function jsonLua()
   --
@@ -901,3 +903,4 @@ function jsonLua()
 end
 
 function pass() return nil end
+
