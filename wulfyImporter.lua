@@ -306,7 +306,8 @@ function fetchDeckData(p)
           scryfall_uri = scryfall_name:format(cardinfo.name)
         end
       end
-      WebRequest.get(scryfall_uri, function(wr)
+      scryfall_headers = { ["User-Agent"] = 'TableTopSimulator', ["Accept"] = "application/json;q=0.9,*/*;q=0.8" } 
+      WebRequest.custom(scryfall_uri, 'GET', true, nil, scryfall_headers, function(wr)
         if wr.is_error or wr.response_code ~= 200 then
           local error_msg = 'Scryfall query failed.\n  URL: %s\n  Response code: %s\n  Card name: %s'
           wLog(error_msg:format(scryfall_uri, wr.response_code, cardinfo.name))
