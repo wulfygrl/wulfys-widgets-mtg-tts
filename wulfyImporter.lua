@@ -1,4 +1,4 @@
-moduleVersion = 0.04
+moduleVersion = 0.05
 pID = "w_importer"
 -- Wulfy Importer by @wulfygrl
 -- Built for use with the Encoder by Tipsy Hobbit (steam_id: 13465982)
@@ -309,8 +309,11 @@ function fetchDeckData(p)
       scryfall_headers = { ["User-Agent"] = 'TableTopSimulator', ["Accept"] = "application/json;q=0.9,*/*;q=0.8" } 
       WebRequest.custom(scryfall_uri, 'GET', true, nil, scryfall_headers, function(wr)
         if wr.is_error or wr.response_code ~= 200 then
-          local error_msg = 'Scryfall query failed.\n  URL: %s\n  Response code: %s\n  Card name: %s'
-          wLog(error_msg:format(scryfall_uri, wr.response_code, cardinfo.name))
+          local error_msg = 'Scryfall query failed.\n  URL: %s\n  Response code: %s'
+          wLog(error_msg:format(scryfall_uri, wr.response_code))
+          if cardinfo.name then
+            wLog(cardinfo.name)
+          end
           piles[name].expected = piles[name].expected - 1
           return
         end
